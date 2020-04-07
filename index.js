@@ -9,7 +9,9 @@ var map = new Map({
   target: 'map',
   layers: [
     new TileLayer({
-      source: new OSM()
+      source: new OSM({
+              "url" : "http://{a-c}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
+          })
     }),
     new TileLayer({
       source: new XYZ({
