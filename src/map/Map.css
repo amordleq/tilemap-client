@@ -1,0 +1,17 @@
+.map-container {
+    width: 100%;
+    height: 1000px;
+    background-color: #000;
+}
+
+.ol-zoom {
+    top: unset;
+    left: unset;
+    bottom: 40px;
+    right: 10px;
+}
+
+.ol-scale-line {
+    left: unset;
+    right: 8px;
+}
