@@ -4,6 +4,7 @@ import {Box, Drawer, Typography} from '@material-ui/core'
 import {withStyles} from '@material-ui/core/styles'
 import Map from './map/Map'
 import LayersPanel from './sidebar/LayersPanel'
+import ElasticsearchFilterBuilder from './support/ElasticsearchFilterBuilder'
 
 const drawerWidth = 240
 
@@ -67,7 +68,7 @@ class App extends Component {
                         currentValues: [0, 50000]
                     }
                 },
-                filter: this.createQuery()
+                filter: null
             }],
             extent: undefined,
             zoom: undefined,
@@ -76,58 +77,21 @@ class App extends Component {
         }
     }
 
-    createQueryClauseToMatchValues(fieldName, values) {
-        return {
-            'bool': {
-                'should': values.map(value => {
-                    return {
-                        'match': {
-                            [fieldName]: value
-                        }
-                    }
-                })
-            }
-        }
-    }
-
-    createQueryClauseToMatchRange(fieldName, min, max) {
-        return {
-            'range': {
-                [fieldName]: {
-                    'gte': min,
-                    'lte': max
-                }
-            }
-        }
-    }
-
-    createQuery(layer) {
-        if (!layer) {
-            return null
-        }
-
-        const clauses = []
+    createElasticsearchFilter(layer) {
         const {radio, status, range} = layer.filters
+        const builder = new ElasticsearchFilterBuilder()
 
         if (radio.currentValues.length < radio.availableValues.length) {
-            clauses.push(this.createQueryClauseToMatchValues('radio', radio.currentValues))
+            builder.matchAny('radio', radio.currentValues)
         }
         if (status.currentValues.length < status.availableValues.length) {
-            clauses.push(this.createQueryClauseToMatchValues('status', status.currentValues))
+            builder.matchAny('status', status.currentValues)
         }
         if (range.currentValues[0] > range.availableValues[0] || range.currentValues[1] < range.availableValues[1]) {
-            clauses.push(this.createQueryClauseToMatchRange('range', range.currentValues[0], range.currentValues[1]))
+            builder.matchRange('range', range.currentValues[0], range.currentValues[1])
         }
 
-        if (clauses.length > 0) {
-            return {
-                'bool': {
-                    'must': [clauses]
-                }
-            }
-        } else {
-            return null
-        }
+        return builder.toString()
     }
 
     handleLayerOpacityChange = (layer, opacity) => {
@@ -158,7 +122,7 @@ class App extends Component {
             newLayer.filters[filterType].currentValues = selectedValues
         }
 
-        newLayer.filter = this.createQuery(newLayer)
+        newLayer.filter = this.createElasticsearchFilter(newLayer)
 
         this.setState({
             layers: Object.assign([], this.state.layers, {[this.state.layers.indexOf(layer)]: newLayer})

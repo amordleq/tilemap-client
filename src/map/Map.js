@@ -19,7 +19,7 @@ class Map extends Component {
         this.eventuallyResizeMapContainer = _.debounce(this.resizeMapContainer.bind(this), 500)
     }
 
-    handleMoveEnd = (event) => {
+    handleMoveEnd = () => {
         const view = this.state.map.getView()
         const extent = transformExtent(view.calculateExtent(this.state.map.getSize()), view.getProjection().getCode(), 'EPSG:4326')
         const zoom = view.getZoom()
@@ -31,7 +31,7 @@ class Map extends Component {
 
     }
 
-    updateDataLayerFilter() {
+    updateDataLayerHue() {
         this.props.layers.filter(layer => Number.isFinite(layer.hue)).forEach(layer => {
             // TODO support multiple data layers
             const dataLayerEl = document.querySelector('.data-layer')
@@ -108,18 +108,18 @@ class Map extends Component {
         const {onDataLayerUpdate} = this.props
 
         prevProps.layers.forEach((prevLayer, index) => {
-            let layer = this.props.layers[index]
+            const layer = this.props.layers[index]
             if (layer.opacity !== prevLayer.opacity) {
                 this.getLayerById(prevLayer.id).setOpacity(layer.opacity)
             }
             if (layer.style && layer.style !== prevLayer.style) {
-                //this.getLayerById(prevLayer.id).getSource().updateParams(this.createLayerParams(layer))
+                //this.getLayerById(layer.id).getSource().updateParams(this.createLayerParams(layer))
             }
             if (layer.hue && layer.hue !== prevLayer.hue) {
-                this.updateDataLayerFilter()
+                this.updateDataLayerHue()
             }
             if (!_.isEqual(layer.filter, prevLayer.filter)) {
-                this.getLayerById(prevLayer.id).getSource().setFilter(layer.filter)
+                this.getLayerById(layer.id).getSource().setFilter(layer.filter)
                 onDataLayerUpdate()
             }
         })
