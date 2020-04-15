@@ -70,7 +70,7 @@ class Map extends Component {
         return this.props.layers.map(layer => {
             if (layer.id === 'baseMap') {
                 const baseMapId = 'mapbox.dark'
-                const accessToken = 'pk.eyJ1IjoibW9uZ29qb25lcyIsImEiOiJjazMzbm1kd3Ywd2diM21wYXBoOTR5cndkIn0.Mf9Zu307-BSPLhfa88NaFg'
+                const accessToken = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN
                 return new TileLayer({
                     id: layer.id,
                     className: 'base-layer',
