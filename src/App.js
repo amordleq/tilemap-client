@@ -5,6 +5,7 @@ import {withStyles} from '@material-ui/core/styles'
 import Map from './map/Map'
 import LayersPanel from './sidebar/LayersPanel'
 import ElasticsearchFilterBuilder from './support/ElasticsearchFilterBuilder'
+import {wrapLongitudeTo180} from './support/CoordinateSupport'
 
 const drawerWidth = 240
 
@@ -159,11 +160,13 @@ class App extends Component {
         if (!extent) { return }
 
         let [west, south, east, north] = extent
-        while (west < -180) {
-            west = 360 - Math.abs(west)
-        }
-        while (east < -180) {
-            east = 360 - Math.abs(east)
+
+        west = wrapLongitudeTo180(west)
+        east = wrapLongitudeTo180(east)
+
+        if (Math.round(west) === Math.round(east)) {
+            west = -180
+            east = 180
         }
 
         let url = `http://localhost:3000/count-region?north=${north}&south=${south}&east=${east}&west=${west}`
