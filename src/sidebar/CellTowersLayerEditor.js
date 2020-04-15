@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import React, {Component} from 'react'
 import {
     Box,
@@ -70,7 +71,7 @@ function RadioFilterField({radioFilter, handleRadioFilterChange}) {
                         value={radioFilter.currentValues}
                         onChange={handleRadioFilterChange}
                         input={<Input/>}
-                        renderValue={selected => selected.sort().join(', ')}
+                        renderValue={selected => _.sortBy(selected).join(', ')}
                         MenuProps={menuProps}
                     >
                         {radioFilter.availableValues.map(value => (
@@ -97,7 +98,7 @@ function StatusFilterField({statusFilter, handleStatusFilterChange}) {
                         value={statusFilter.currentValues}
                         onChange={handleStatusFilterChange}
                         input={<Input/>}
-                        renderValue={selected => selected.sort().join(', ')}
+                        renderValue={selected => _.sortBy(selected).join(', ')}
                         MenuProps={menuProps}
                     >
                         {statusFilter.availableValues.map(value => (
@@ -120,7 +121,7 @@ function RangeField({range, handleRangeChange}) {
         <Box>
             <FormControl fullWidth>
                 <Typography variant={'subtitle2'}>Range (m)</Typography>
-                <Slider min={min} max={max} defaultValue={range.availableValues} valueLabelDisplay="auto"
+                <Slider min={min} max={max} defaultValue={[min, max]} valueLabelDisplay="auto"
                         onChangeCommitted={handleRangeChange}/>
             </FormControl>
         </Box>

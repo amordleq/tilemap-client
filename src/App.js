@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import React, {Component} from 'react'
+import produce from 'immer'
 import {Box, Drawer, Typography} from '@material-ui/core'
 import {withStyles} from '@material-ui/core/styles'
 import Map from './map/Map'
@@ -96,38 +97,34 @@ class App extends Component {
     }
 
     handleLayerOpacityChange = (layer, opacity) => {
-        this.setState({
-            layers: Object.assign([], this.state.layers, {[this.state.layers.indexOf(layer)]: {...layer, opacity}})
-        })
+        this.setState(produce(draft => {
+            draft.layers.find(it => it.id === layer.id).opacity = opacity
+        }))
     }
 
     handleLayerStyleChange = (layer, style) => {
-        this.setState({
-            layers: Object.assign([], this.state.layers, {[this.state.layers.indexOf(layer)]: {...layer, style}})
-        })
+        this.setState(produce(draft => {
+            draft.layers.find(it => it.id === layer.id).style = style
+        }))
     }
 
     handleLayerHueChange = (layer, hue) => {
-        this.setState({
-            layers: Object.assign([], this.state.layers, {[this.state.layers.indexOf(layer)]: {...layer, hue}})
-        })
+        this.setState(produce(draft => {
+            draft.layers.find(it => it.id === layer.id).hue = hue
+        }))
     }
 
     handleLayerFilterChange = (layer, filterType, value) => {
-        const newLayer = {...layer}
-        newLayer.filters = {...newLayer.filters}
+        this.setState(produce(draft => {
+            const draftLayer = draft.layers.find(it => it.id === layer.id)
 
-        if (filterType === 'radio' || filterType === 'status' || filterType === 'range') {
-            const selectedValues = value
-            newLayer.filters[filterType] = {...(newLayer.filters[filterType])}
-            newLayer.filters[filterType].currentValues = selectedValues
-        }
+            if (filterType === 'radio' || filterType === 'status' || filterType === 'range') {
+                const selectedValues = _.clone(value)
+                draftLayer.filters[filterType].currentValues = selectedValues
+            }
 
-        newLayer.filter = this.createElasticsearchFilter(newLayer)
-
-        this.setState({
-            layers: Object.assign([], this.state.layers, {[this.state.layers.indexOf(layer)]: newLayer})
-        })
+            draftLayer.filter = this.createElasticsearchFilter(draftLayer)
+        }))
     }
 
     handleDataLayerUpdate = () => {
@@ -157,7 +154,9 @@ class App extends Component {
 
     updateDocumentCount() {
         const {extent, layers} = this.state
-        if (!extent) { return }
+        if (!extent) {
+            return
+        }
 
         let [west, south, east, north] = extent
 
