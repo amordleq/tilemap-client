@@ -1,11 +1,14 @@
 import _ from 'lodash'
 import React, {Component} from 'react'
+import {connect} from 'react-redux'
 import View from 'ol/View'
 import OpenLayerMap from 'ol/Map'
 import TileLayer from 'ol/layer/Tile'
 import XYZ from 'ol/source/XYZ'
 import {fromLonLat, transformExtent} from 'ol/proj'
 import {defaults as defaultControls, ScaleLine} from 'ol/control'
+import {getLayers} from '../store/layers'
+import {updateView} from '../store/map'
 import FilterableXYZ from './FilterableXYZ'
 import 'ol/ol.css'
 import './Map.css'
@@ -20,11 +23,12 @@ class Map extends Component {
     }
 
     handleMoveEnd = () => {
+        const {updateView} = this.props
         const view = this.state.map.getView()
         const extent = transformExtent(view.calculateExtent(this.state.map.getSize()), view.getProjection().getCode(), 'EPSG:4326')
         const zoom = view.getZoom()
 
-        this.props.onMapChange(extent, zoom)
+        updateView(extent, zoom)
     }
 
     handleClick = (event) => {
@@ -35,7 +39,9 @@ class Map extends Component {
         this.props.layers.filter(layer => Number.isFinite(layer.hue)).forEach(layer => {
             // TODO support multiple data layers
             const dataLayerEl = document.querySelector('.data-layer')
-            if (!dataLayerEl) { return }
+            if (!dataLayerEl) {
+                return
+            }
 
             dataLayerEl.style.filter = `hue-rotate(${layer.hue}deg)`
         })
@@ -143,4 +149,16 @@ class Map extends Component {
 
 }
 
-export default Map
+const mapStateToProps = state => {
+    return {
+        layers: getLayers(state)
+    }
+}
+
+const mapDispatchToProps = dispatch => {
+    return {
+        updateView: (extent, zoom) => dispatch(updateView(extent, zoom))
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Map)

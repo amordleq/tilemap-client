@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import React, {Component} from 'react'
+import React, {useCallback} from 'react'
 import {
     Box,
     Checkbox,
@@ -12,6 +12,8 @@ import {
     Slider,
     Typography
 } from '@material-ui/core'
+import {useDispatch} from 'react-redux'
+import {setLayerFilter, setLayerHue, setLayerOpacity, setLayerStyle} from '../store/layers'
 
 const menuProps = {
     PaperProps: {
@@ -128,53 +130,50 @@ function RangeField({range, handleRangeChange}) {
     )
 }
 
-class CellTowersLayerEditor extends Component {
+function CellTowersLayerEditor({layer}) {
+    const {label, opacity, filters, style, hue} = layer
+    const {radio, status, range} = filters
+    const dispatch = useDispatch()
 
-    handleOpacityChange = (event, newValue) => {
-        this.props.onLayerOpacityChange(this.props.layer, newValue)
-    }
+    const handleOpacityChange = useCallback((event, newValue) => {
+        dispatch(setLayerOpacity(layer.id, newValue))
+    }, [dispatch, layer])
 
-    handleStyleChange = (event) => {
+    const handleStyleChange = useCallback((event) => {
         if (event.target.value) {
-            this.props.onLayerStyleChange(this.props.layer, event.target.value)
+            dispatch(setLayerStyle(layer.id, event.target.value))
         }
-    }
+    }, [dispatch, layer])
 
-    handleHueChange = (event, newValue) => {
-        this.props.onLayerHueChange(this.props.layer, newValue)
-    }
+    const handleHueChange = useCallback((event, newValue) => {
+        dispatch(setLayerHue(layer.id, newValue))
+    }, [dispatch, layer])
 
-    handleRadioFilterChange = (event) => {
+    const handleRadioFilterChange = useCallback((event) => {
         const selectedValues = event.target.value
-        this.props.onLayerFilterChange(this.props.layer, 'radio', selectedValues)
-    }
+        dispatch(setLayerFilter(layer.id, 'radio', selectedValues))
+    }, [dispatch, layer])
 
-    handleStatusFilterChange = (event) => {
+    const handleStatusFilterChange = useCallback((event) => {
         const selectedValues = event.target.value
-        this.props.onLayerFilterChange(this.props.layer, 'status', selectedValues)
-    }
+        dispatch(setLayerFilter(layer.id, 'status', selectedValues))
+    }, [dispatch, layer])
 
-    handleRangeChange = (event, newValue) => {
-        this.props.onLayerFilterChange(this.props.layer, 'range', newValue)
-    }
+    const handleRangeChange = useCallback((event, newValue) => {
+        dispatch(setLayerFilter(layer.id, 'range', newValue))
+    }, [dispatch, layer])
 
-    render() {
-        const {label, opacity, filters, style, hue} = this.props.layer
-        const {radio, status, range} = filters
-
-        return <div className="layer-editor">
-            <div className="layer-editor-heading">{label}</div>
-            <OpacityField opacity={opacity} handleOpacityChange={this.handleOpacityChange}/>
-            <StyleField style={style} handleStyleChange={this.handleStyleChange}/>
-            {style === 'heatmap' &&
-            <HueField hue={hue} handleHueChange={this.handleHueChange}/>
-            }
-            <RadioFilterField radioFilter={radio} handleRadioFilterChange={this.handleRadioFilterChange}/>
-            <StatusFilterField statusFilter={status} handleStatusFilterChange={this.handleStatusFilterChange}/>
-            <RangeField range={range} handleRangeChange={this.handleRangeChange}/>
-        </div>
-    }
-
+    return <div className="layer-editor">
+        <div className="layer-editor-heading">{label}</div>
+        <OpacityField opacity={opacity} handleOpacityChange={handleOpacityChange}/>
+        <StyleField style={style} handleStyleChange={handleStyleChange}/>
+        {style === 'heatmap' &&
+        <HueField hue={hue} handleHueChange={handleHueChange}/>
+        }
+        <RadioFilterField radioFilter={radio} handleRadioFilterChange={handleRadioFilterChange}/>
+        <StatusFilterField statusFilter={status} handleStatusFilterChange={handleStatusFilterChange}/>
+        <RangeField range={range} handleRangeChange={handleRangeChange}/>
+    </div>
 }
 
 export default CellTowersLayerEditor

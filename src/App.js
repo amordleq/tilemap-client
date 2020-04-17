@@ -1,12 +1,13 @@
 import _ from 'lodash'
 import React, {Component} from 'react'
-import produce from 'immer'
+import {connect} from 'react-redux'
 import {Box, Drawer, Typography} from '@material-ui/core'
 import {withStyles} from '@material-ui/core/styles'
 import Map from './map/Map'
 import LayersPanel from './sidebar/LayersPanel'
-import ElasticsearchFilterBuilder from './support/ElasticsearchFilterBuilder'
 import {wrapLongitudeTo180} from './support/CoordinateSupport'
+import {getLayers} from './store/layers'
+import {getExtent, getZoom} from './store/map'
 
 const drawerWidth = 240
 
@@ -45,101 +46,12 @@ class App extends Component {
         super(props)
         this.eventuallyUpdateDocumentCount = _.debounce(this.updateDocumentCount.bind(this), 500)
         this.state = {
-            layers: [{
-                id: 'baseMap',
-                label: 'Base Map',
-                opacity: 0.5
-            }, {
-                id: 'cell-towers',
-                name: 'SYSTOLIC:cell-towers',
-                label: 'Cell Tower Layer',
-                opacity: 1,
-                style: 'heatmap',
-                hue: 0,
-                filters: {
-                    'radio': {
-                        availableValues: ['CDMA', 'GSM', 'LTE', 'UMTS'],
-                        currentValues: ['CDMA', 'GSM', 'LTE', 'UMTS']
-                    },
-                    'status': {
-                        availableValues: ['Allocated', 'Not operational', 'Operational', 'Reserved', 'Unknown', 'Temporary operational'],
-                        currentValues: ['Allocated', 'Not operational', 'Operational', 'Reserved', 'Unknown', 'Temporary operational']
-                    },
-                    'range': {
-                        availableValues: [0, 50000],
-                        currentValues: [0, 50000]
-                    }
-                },
-                filter: null
-            }],
-            extent: undefined,
-            zoom: undefined,
-            documentCount: 0,
-            selectedDocuments: undefined
+            documentCount: 0
         }
-    }
-
-    createElasticsearchFilter(layer) {
-        const {radio, status, range} = layer.filters
-        const builder = new ElasticsearchFilterBuilder()
-
-        if (radio.currentValues.length < radio.availableValues.length) {
-            builder.matchAny('radio', radio.currentValues)
-        }
-        if (status.currentValues.length < status.availableValues.length) {
-            builder.matchAny('status', status.currentValues)
-        }
-        if (range.currentValues[0] > range.availableValues[0] || range.currentValues[1] < range.availableValues[1]) {
-            builder.matchRange('range', range.currentValues[0], range.currentValues[1])
-        }
-
-        return builder.toString()
-    }
-
-    handleLayerOpacityChange = (layer, opacity) => {
-        this.setState(produce(draft => {
-            draft.layers.find(it => it.id === layer.id).opacity = opacity
-        }))
-    }
-
-    handleLayerStyleChange = (layer, style) => {
-        this.setState(produce(draft => {
-            draft.layers.find(it => it.id === layer.id).style = style
-        }))
-    }
-
-    handleLayerHueChange = (layer, hue) => {
-        this.setState(produce(draft => {
-            draft.layers.find(it => it.id === layer.id).hue = hue
-        }))
-    }
-
-    handleLayerFilterChange = (layer, filterType, value) => {
-        this.setState(produce(draft => {
-            const draftLayer = draft.layers.find(it => it.id === layer.id)
-
-            if (filterType === 'radio' || filterType === 'status' || filterType === 'range') {
-                const selectedValues = _.clone(value)
-                draftLayer.filters[filterType].currentValues = selectedValues
-            }
-
-            draftLayer.filter = this.createElasticsearchFilter(draftLayer)
-        }))
     }
 
     handleDataLayerUpdate = () => {
         this.eventuallyUpdateDocumentCount()
-    }
-
-    handleMapChange = (extent, zoom) => {
-        this.setState({
-            extent: extent,
-            zoom: zoom
-        })
-    }
-
-    handleMapClick = (geoPoint, resolution) => {
-
     }
 
     componentDidMount() {
@@ -147,13 +59,13 @@ class App extends Component {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        if (this.state.extent !== prevState.extent) {
+        if (this.props.extent !== prevProps.extent) {
             this.eventuallyUpdateDocumentCount()
         }
     }
 
     updateDocumentCount() {
-        const {extent, layers} = this.state
+        const {extent, layers} = this.props
         if (!extent) {
             return
         }
@@ -209,17 +121,10 @@ class App extends Component {
                     variant="permanent"
                     anchor="left">
                     <TitlePanel documentCount={documentCount}/>
-                    <LayersPanel layers={this.state.layers}
-                                 onLayerOpacityChange={this.handleLayerOpacityChange}
-                                 onLayerStyleChange={this.handleLayerStyleChange}
-                                 onLayerHueChange={this.handleLayerHueChange}
-                                 onLayerFilterChange={this.handleLayerFilterChange}/>
+                    <LayersPanel/>
                 </Drawer>
                 <main className={classes.content}>
-                    <Map layers={this.state.layers}
-                         onDataLayerUpdate={this.handleDataLayerUpdate}
-                         onMapChange={this.handleMapChange}
-                         onMapClick={this.handleMapClick}/>
+                    <Map onDataLayerUpdate={this.handleDataLayerUpdate}/>
                 </main>
             </div>
         )
@@ -227,4 +132,16 @@ class App extends Component {
 
 }
 
-export default withStyles(styles)(App)
+const mapStateToProps = state => {
+    return {
+        layers: getLayers(state),
+        extent: getExtent(state),
+        zoom: getZoom(state)
+    }
+}
+
+const mapDispatchToProps = () => {
+    return {}
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(App))
