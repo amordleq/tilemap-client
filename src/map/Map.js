@@ -7,8 +7,8 @@ import TileLayer from 'ol/layer/Tile'
 import XYZ from 'ol/source/XYZ'
 import {fromLonLat, transformExtent} from 'ol/proj'
 import {defaults as defaultControls, ScaleLine} from 'ol/control'
+import {fetchTotalCount} from '../store/cellTowers'
 import {getLayers} from '../store/layers'
-import {updateView} from '../store/map'
 import FilterableXYZ from './FilterableXYZ'
 import 'ol/ol.css'
 import './Map.css'
@@ -20,15 +20,18 @@ class Map extends Component {
         this.mapContainer = React.createRef()
         this.handleWindowResize = this.onWindowResize.bind(this)
         this.eventuallyResizeMapContainer = _.debounce(this.resizeMapContainer.bind(this), 500)
+        this.state = {
+            extent: undefined
+        }
     }
 
     handleMoveEnd = () => {
-        const {updateView} = this.props
         const view = this.state.map.getView()
         const extent = transformExtent(view.calculateExtent(this.state.map.getSize()), view.getProjection().getCode(), 'EPSG:4326')
-        const zoom = view.getZoom()
 
-        updateView(extent, zoom)
+        this.setState({
+            extent: extent
+        })
     }
 
     handleClick = (event) => {
@@ -104,6 +107,8 @@ class Map extends Component {
         this.initializeMap()
 
         window.addEventListener('resize', this.handleWindowResize)
+
+        this.fetchTotalCellTowerCountForCurrentView()
     }
 
     componentWillUnmount() {
@@ -111,8 +116,6 @@ class Map extends Component {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        const {onDataLayerUpdate} = this.props
-
         prevProps.layers.forEach((prevLayer, index) => {
             const layer = this.props.layers[index]
             if (layer.opacity !== prevLayer.opacity) {
@@ -126,9 +129,13 @@ class Map extends Component {
             }
             if (!_.isEqual(layer.filter, prevLayer.filter)) {
                 this.getLayerById(layer.id).getSource().setFilter(layer.filter)
-                onDataLayerUpdate()
+                this.fetchTotalCellTowerCountForCurrentView()
             }
         })
+
+        if (this.state.extent !== prevState.extent) {
+            this.fetchTotalCellTowerCountForCurrentView()
+        }
     }
 
     onWindowResize() {
@@ -147,6 +154,12 @@ class Map extends Component {
         return this.state.map.getLayers().getArray().find(layer => layer.get('id') === id)
     }
 
+    fetchTotalCellTowerCountForCurrentView() {
+        const {layers, fetchTotalCellTowerCount} = this.props
+        const {extent} = this.state
+        fetchTotalCellTowerCount(layers, extent)
+    }
+
 }
 
 const mapStateToProps = state => {
@@ -157,7 +170,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        updateView: (extent, zoom) => dispatch(updateView(extent, zoom))
+        fetchTotalCellTowerCount: (layers, extent) => dispatch(fetchTotalCount(layers, extent))
     }
 }
 

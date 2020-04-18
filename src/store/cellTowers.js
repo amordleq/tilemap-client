@@ -15,7 +15,7 @@ export const cellTowers = createSlice({
 
 const {setTotalCount} = cellTowers.actions
 
-export const updateTotalCount = (layers, extent) => dispatch => {
+export const fetchTotalCount = (layers, extent) => dispatch => {
     if (!layers || !extent) {
         return
     }
