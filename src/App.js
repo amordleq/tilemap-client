@@ -1,13 +1,14 @@
 import _ from 'lodash'
 import React, {Component} from 'react'
 import {connect} from 'react-redux'
-import {Box, Drawer, Typography} from '@material-ui/core'
+import {Drawer} from '@material-ui/core'
 import {withStyles} from '@material-ui/core/styles'
 import Map from './map/Map'
 import LayersPanel from './sidebar/LayersPanel'
-import {wrapLongitudeTo180} from './support/CoordinateSupport'
+import TitlePanel from './sidebar/TitlePanel'
+import {updateTotalCount} from './store/cellTowers'
 import {getLayers} from './store/layers'
-import {getExtent, getZoom} from './store/map'
+import {getExtent} from './store/map'
 
 const drawerWidth = 240
 
@@ -29,87 +30,34 @@ const styles = theme => {
     }
 }
 
-function TitlePanel({documentCount}) {
-    return (
-        <Box mt={1} mb={1}>
-            <Typography variant="h5" align="center">Cell Towers</Typography>
-            {_.isNumber(documentCount) &&
-            <Typography variant="h6" align="center">{documentCount.toLocaleString()}</Typography>
-            }
-        </Box>
-    )
-}
-
 class App extends Component {
 
     constructor(props) {
         super(props)
-        this.eventuallyUpdateDocumentCount = _.debounce(this.updateDocumentCount.bind(this), 500)
-        this.state = {
-            documentCount: 0
-        }
+        this.eventuallyUpdateTotalCount = _.debounce(this.updateTotalCount.bind(this), 500)
     }
 
     handleDataLayerUpdate = () => {
-        this.eventuallyUpdateDocumentCount()
+        this.eventuallyUpdateTotalCount()
     }
 
     componentDidMount() {
-        this.eventuallyUpdateDocumentCount()
+        this.eventuallyUpdateTotalCount()
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
         if (this.props.extent !== prevProps.extent) {
-            this.eventuallyUpdateDocumentCount()
+            this.eventuallyUpdateTotalCount()
         }
     }
 
-    updateDocumentCount() {
-        const {extent, layers} = this.props
-        if (!extent) {
-            return
-        }
-
-        let [west, south, east, north] = extent
-
-        west = wrapLongitudeTo180(west)
-        east = wrapLongitudeTo180(east)
-
-        if (Math.round(west) === Math.round(east)) {
-            west = -180
-            east = 180
-        }
-
-        let url = `http://localhost:3000/count-region?north=${north}&south=${south}&east=${east}&west=${west}`
-
-        const layerWithFilter = layers.find(layer => layer.filter)
-        if (layerWithFilter) {
-            url += `&filter=${encodeURIComponent(JSON.stringify(layerWithFilter.filter))}`
-        }
-
-        fetch(url, {
-            method: 'GET',
-            mode: 'same-origin',
-            headers: {
-                'Content-Type': 'text/plain'
-            }
-        }).then(response => {
-            if (!response.ok) {
-                throw new Error(response.statusText)
-            }
-            response.text().then(text => {
-                this.setState({
-                    documentCount: parseInt(text, 10)
-                })
-            })
-        }).catch(error => {
-            console.error(error)
-        })
+    updateTotalCount() {
+        const {layers, extent, updateTotalCellTowerCount} = this.props
+        updateTotalCellTowerCount(layers, extent)
     }
 
     render() {
         const {classes} = this.props
-        const {documentCount} = this.state
 
         return (
             <div className="app">
@@ -120,7 +68,7 @@ class App extends Component {
                     }}
                     variant="permanent"
                     anchor="left">
-                    <TitlePanel documentCount={documentCount}/>
+                    <TitlePanel/>
                     <LayersPanel/>
                 </Drawer>
                 <main className={classes.content}>
@@ -129,19 +77,19 @@ class App extends Component {
             </div>
         )
     }
-
 }
 
 const mapStateToProps = state => {
     return {
         layers: getLayers(state),
-        extent: getExtent(state),
-        zoom: getZoom(state)
+        extent: getExtent(state)
     }
 }
 
-const mapDispatchToProps = () => {
-    return {}
+const mapDispatchToProps = dispatch => {
+    return {
+        updateTotalCellTowerCount: (layers, extent) => dispatch(updateTotalCount(layers, extent))
+    }
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(App))
