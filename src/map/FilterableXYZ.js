@@ -16,7 +16,7 @@ class FilterableXYZ extends XYZ {
     }
 
     composeTileUrl(coordinates) {
-        const url = `http://localhost:3000/${coordinates[0]}/${coordinates[1]}/${coordinates[2]}.png`
+        const url = `/${coordinates[0]}/${coordinates[1]}/${coordinates[2]}.png`
         if (this.filter) {
             return `${url}?filter=${encodeURIComponent(JSON.stringify(this.filter))}`
         } else {

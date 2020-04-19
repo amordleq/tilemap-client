@@ -30,7 +30,7 @@ export const fetchTotalCount = (layers, extent) => dispatch => {
         east = 180
     }
 
-    let url = `http://localhost:3000/count-region?north=${north}&south=${south}&east=${east}&west=${west}`
+    let url = `/count-region?north=${north}&south=${south}&east=${east}&west=${west}`
 
     const layerWithFilter = layers.find(layer => layer.filter)
     if (layerWithFilter) {
