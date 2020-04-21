@@ -43,10 +43,11 @@ class Map extends Component {
             // TODO support multiple data layers
             const dataLayerEl = document.querySelector('.data-layer')
             if (!dataLayerEl) {
+                console.warn('data-layer element not found')
                 return
             }
 
-            dataLayerEl.style.filter = `hue-rotate(${layer.hue}deg)`
+            dataLayerEl.style.filter = `hue-rotate(${layer.hue.toFixed()}deg)`
         })
     }
 
