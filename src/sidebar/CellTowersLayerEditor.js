@@ -43,7 +43,7 @@ function StyleField({style, handleStyleChange}) {
                 <Typography variant={'subtitle2'}>Style</Typography>
                 <Select value={style} onChange={handleStyleChange}>
                     <MenuItem value={'heatmap'}>Heatmap</MenuItem>
-                    <MenuItem value={'country-codes'}>MCC (Country Codes)</MenuItem>
+                    <MenuItem value={'subterm/mcc'}>MCC (Country Codes)</MenuItem>
                 </Select>
             </FormControl>
         </Box>

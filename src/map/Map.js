@@ -11,7 +11,7 @@ import {defaults as defaultControls, ScaleLine} from 'ol/control'
 import {fetchDetails, fetchTotalCount, showDetails} from '../store/cellTowers'
 import {getLayers} from '../store/layers'
 import {wrapLongitudeTo180} from '../support/CoordinateSupport'
-import FilterableXYZ from './FilterableXYZ'
+import DataLayerSource from './DataLayerSource'
 import 'ol/ol.css'
 import './Map.css'
 
@@ -115,7 +115,8 @@ class Map extends Component {
                     id: layer.id,
                     className: 'data-layer',
                     opacity: layer.opacity,
-                    source: new FilterableXYZ({
+                    source: new DataLayerSource({
+                        style: layer.style,
                         filter: layer.filter
                     })
                 })
@@ -144,7 +145,7 @@ class Map extends Component {
                 this.getLayerById(prevLayer.id).setOpacity(layer.opacity)
             }
             if (layer.style && layer.style !== prevLayer.style) {
-                //this.getLayerById(layer.id).getSource().updateParams(this.createLayerParams(layer))
+                this.getLayerById(layer.id).getSource().setStyle(layer.style)
             }
             if (layer.hue && layer.hue !== prevLayer.hue) {
                 this.updateDataLayerHue()
