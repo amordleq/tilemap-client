@@ -73,14 +73,18 @@ export const fetchTotalCount = (layers, extent) => dispatch => {
     })
 }
 
-export const fetchDetails = (geoPoint, resolution) => dispatch => {
+export const fetchDetails = (geoPoint, resolution, layers) => dispatch => {
     const [longitude, latitude] = geoPoint
     const minimumDistanceInMeters = 500
     const distance = Math.max(minimumDistanceInMeters, Math.round(resolution)) + 'm'
     const maxResults = 200
+    const layerWithFilter = layers.find(layer => layer.filter)
 
     const url = new URL('/cell-towers', window.location.origin)
     const params = {latitude, longitude, distance, maxResults}
+    if (layerWithFilter) {
+        params['filter'] = JSON.stringify(layerWithFilter.filter)
+    }
     Object.keys(params).forEach(key => url.searchParams.append(key, params[key]))
 
     fetch(url, {

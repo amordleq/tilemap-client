@@ -8,7 +8,7 @@ import TileLayer from 'ol/layer/Tile'
 import XYZ from 'ol/source/XYZ'
 import {fromLonLat, transform, transformExtent} from 'ol/proj'
 import {defaults as defaultControls, ScaleLine} from 'ol/control'
-import {fetchDetails, fetchTotalCount, showDetails} from '../store/cellTowers'
+import {fetchDetails, fetchTotalCount, isDetailsVisible, showDetails} from '../store/cellTowers'
 import {getLayers} from '../store/layers'
 import {wrapLongitudeTo180} from '../support/CoordinateSupport'
 import DataLayerSource from './DataLayerSource'
@@ -23,7 +23,9 @@ class Map extends Component {
         this.handleWindowResize = this.onWindowResize.bind(this)
         this.eventuallyResizeMapContainer = _.debounce(this.resizeMapContainer.bind(this), 500)
         this.state = {
-            extent: undefined
+            extent: undefined,
+            selectionGeoPoint: undefined,
+            selectionResolution: undefined
         }
     }
 
@@ -37,7 +39,7 @@ class Map extends Component {
     }
 
     handleClick = (event) => {
-        const {showDetails, fetchCellTowerDetails} = this.props
+        const {showDetails} = this.props
         const {selectedLocationOverlay} = this.state
 
         const view = this.state.map.getView()
@@ -45,9 +47,14 @@ class Map extends Component {
         geoPoint[0] = wrapLongitudeTo180(geoPoint[0])
         const resolution = view.getResolution()
 
+        this.setState({
+            selectionGeoPoint: geoPoint,
+            selectionResolution: resolution
+        })
+
         selectedLocationOverlay.setPosition(event.coordinate)
 
-        fetchCellTowerDetails(geoPoint, resolution)
+        this.fetchCellTowerDetailsForCurrentSelection()
 
         showDetails(geoPoint)
     }
@@ -153,11 +160,19 @@ class Map extends Component {
             if (!_.isEqual(layer.filter, prevLayer.filter)) {
                 this.getLayerById(layer.id).getSource().setFilter(layer.filter)
                 this.fetchTotalCellTowerCountForCurrentView()
+                this.fetchCellTowerDetailsForCurrentSelection()
             }
         })
 
         if (this.state.extent !== prevState.extent) {
             this.fetchTotalCellTowerCountForCurrentView()
+        }
+
+        if (prevProps.detailsVisible && !this.props.detailsVisible) {
+            this.setState({
+                selectionGeoPoint: null,
+                selectionResolution: null
+            })
         }
     }
 
@@ -183,18 +198,27 @@ class Map extends Component {
         fetchTotalCellTowerCount(layers, extent)
     }
 
+    fetchCellTowerDetailsForCurrentSelection() {
+        const {fetchCellTowerDetails, layers} = this.props
+        const {selectionGeoPoint, selectionResolution} = this.state
+        if (selectionGeoPoint && selectionResolution) {
+            fetchCellTowerDetails(selectionGeoPoint, selectionResolution, layers)
+        }
+    }
+
 }
 
 const mapStateToProps = state => {
     return {
-        layers: getLayers(state)
+        layers: getLayers(state),
+        detailsVisible: isDetailsVisible(state)
     }
 }
 
 const mapDispatchToProps = dispatch => {
     return {
         fetchTotalCellTowerCount: (layers, extent) => dispatch(fetchTotalCount(layers, extent)),
-        fetchCellTowerDetails: (geoPoint, resolution) => dispatch(fetchDetails(geoPoint, resolution)),
+        fetchCellTowerDetails: (geoPoint, resolution, layers) => dispatch(fetchDetails(geoPoint, resolution, layers)),
         showDetails: (geoPoint) => dispatch(showDetails(geoPoint))
     }
 }
