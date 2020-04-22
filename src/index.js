@@ -7,6 +7,7 @@ import {ThemeProvider} from '@material-ui/core/styles'
 import store from './store'
 import theme from './theme'
 import App from './App'
+import '@fortawesome/fontawesome-free/css/all.css'
 import './index.css'
 
 document.title = 'Tile Map Demo'

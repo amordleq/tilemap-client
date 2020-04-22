@@ -1,0 +1,4 @@
+#selected-location-overlay {
+    font-size: 20px;
+    text-shadow: 1px 1px 1px hsla(0, 0%, 0%, 0.5), -1px 1px 1px hsla(0, 0%, 0%, 0.5), 1px -1px 1px hsla(0, 0%, 0%, 0.5), -1px -1px 1px hsla(0, 0%, 0%, 0.5);
+}

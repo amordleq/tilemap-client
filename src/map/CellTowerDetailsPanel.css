@@ -1,0 +1,41 @@
+.details-overlay {
+    position: absolute;
+    bottom: 15px;
+    left: 150px;
+    height: 210px;
+    width: calc(100% - 300px);
+    display: flex;
+    flex-direction: column;
+}
+
+.details-overlay.hidden {
+    bottom: -225px;
+}
+
+.details-overlay .title {
+    font-size: 14px;
+    font-weight: 600;
+    padding: 5px 10px;
+    background-color: hsl(0, 0%, 15%);
+}
+
+.details-overlay .title > i {
+    margin-right: 7px;
+}
+
+.details-overlay .close-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2;
+}
+
+.details-overlay .no-cell-towers-found-message {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+    font-weight: 400;
+    color: hsl(0, 0%, 80%);
+}

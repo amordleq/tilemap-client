@@ -3,12 +3,14 @@ import React, {Component} from 'react'
 import {connect} from 'react-redux'
 import View from 'ol/View'
 import OpenLayerMap from 'ol/Map'
+import Overlay from 'ol/Overlay'
 import TileLayer from 'ol/layer/Tile'
 import XYZ from 'ol/source/XYZ'
-import {fromLonLat, transformExtent} from 'ol/proj'
+import {fromLonLat, transform, transformExtent} from 'ol/proj'
 import {defaults as defaultControls, ScaleLine} from 'ol/control'
-import {fetchTotalCount} from '../store/cellTowers'
+import {fetchDetails, fetchTotalCount, showDetails} from '../store/cellTowers'
 import {getLayers} from '../store/layers'
+import {wrapLongitudeTo180} from '../support/CoordinateSupport'
 import FilterableXYZ from './FilterableXYZ'
 import 'ol/ol.css'
 import './Map.css'
@@ -35,7 +37,19 @@ class Map extends Component {
     }
 
     handleClick = (event) => {
+        const {showDetails, fetchCellTowerDetails} = this.props
+        const {selectedLocationOverlay} = this.state
 
+        const view = this.state.map.getView()
+        const geoPoint = transform(event.coordinate, view.getProjection().getCode(), 'EPSG:4326')
+        geoPoint[0] = wrapLongitudeTo180(geoPoint[0])
+        const resolution = view.getResolution()
+
+        selectedLocationOverlay.setPosition(event.coordinate)
+
+        fetchCellTowerDetails(geoPoint, resolution)
+
+        showDetails(geoPoint)
     }
 
     updateDataLayerHue() {
@@ -59,17 +73,24 @@ class Map extends Component {
             zoom: 2
         })
 
+        const selectedLocationOverlay = new Overlay({
+            element: document.getElementById('selected-location-overlay'),
+            positioning: 'center-center'
+        });
+
         const map = new OpenLayerMap({
             target: this.mapContainer.current,
             layers: layers,
             view: view,
             controls: defaultControls().extend([
                 new ScaleLine()
-            ])
+            ]),
+            overlays: [selectedLocationOverlay]
         })
 
         this.setState({
-            map: map
+            map,
+            selectedLocationOverlay
         })
 
         map.on('moveend', this.handleMoveEnd)
@@ -171,7 +192,9 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        fetchTotalCellTowerCount: (layers, extent) => dispatch(fetchTotalCount(layers, extent))
+        fetchTotalCellTowerCount: (layers, extent) => dispatch(fetchTotalCount(layers, extent)),
+        fetchCellTowerDetails: (geoPoint, resolution) => dispatch(fetchDetails(geoPoint, resolution)),
+        showDetails: (geoPoint) => dispatch(showDetails(geoPoint))
     }
 }
 
