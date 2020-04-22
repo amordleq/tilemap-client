@@ -18,23 +18,6 @@ import {getDetailsCellTowers, getDetailsSelectedLocation, hideDetails, isDetails
 import './CellTowerDetailsPanel.css'
 import TableSortLabel from '@material-ui/core/TableSortLabel'
 
-/*
-radio: "UMTS"
-mcc: 310
-net: 410
-area: 15904
-cell: 208044403
-range: 6222
-location: {lat: 37.551093, lon: -86.366239}
-type: "National"
-countryName: "United States of America"
-countryCode: "US"
-brand: "AT&T"
-operator: "AT&T Mobility"
-status: "Operational"
-bands: "GSM 850 / GSM 1900 / UMTS 850 / UMTS 1900"
- */
-
 const useStyles = makeStyles({
     paperRoot: {
         backgroundColor: 'hsla(0, 0%, 26%, 0.97)',
@@ -102,8 +85,12 @@ const columns = [{
     header: 'Cell',
     sortIteratee: true
 }, {
+    id: 'operator',
+    fieldName: 'operator',
+    header: 'Operator'
+}, {
     id: 'country',
-    fieldName: 'countryCode',
+    fieldName: 'countryName',
     header: 'Country'
 }, {
     id: 'status',
