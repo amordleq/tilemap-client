@@ -1,4 +1,8 @@
-.layers-panel .layer-editor .layer-editor-heading {
+.layers-panel {
+    flex: 1 1 auto;
+}
+
+ .layer-editor .layer-editor-heading {
     font-size: 14px;
     font-weight: bold;
     margin-bottom: 0.3em;

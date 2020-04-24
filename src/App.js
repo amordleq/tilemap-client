@@ -3,9 +3,10 @@ import {Drawer} from '@material-ui/core'
 import {withStyles} from '@material-ui/core/styles'
 import CellTowerDetailsPanel from './map/CellTowerDetailsPanel'
 import Map from './map/Map'
-import LayersPanel from './sidebar/LayersPanel'
-import TitlePanel from './sidebar/TitlePanel'
 import SelectedLocationOverlay from './map/SelectedLocationOverlay'
+import LayersPanel from './sidebar/LayersPanel'
+import ServerInfoPanel from './sidebar/ServerInfoPanel'
+import TitlePanel from './sidebar/TitlePanel'
 
 const drawerWidth = 240
 
@@ -15,6 +16,7 @@ const styles = theme => {
             display: 'flex'
         },
         drawer: {
+            display: 'flex',
             width: drawerWidth
         },
         drawerPaper: {
@@ -44,6 +46,7 @@ class App extends Component {
                     anchor="left">
                     <TitlePanel/>
                     <LayersPanel/>
+                    <ServerInfoPanel/>
                 </Drawer>
                 <main className={classes.content}>
                     <Map/>

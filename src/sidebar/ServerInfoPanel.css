@@ -1,0 +1,9 @@
+.server-info-panel .heading {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 0.5em;
+}
+
+.server-info-panel .item {
+    font-size: 14px;
+}
