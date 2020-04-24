@@ -25,7 +25,8 @@ const styles = theme => {
         content: {
             position: 'relative',
             width: `calc(100% - ${drawerWidth}px)`,
-            marginLeft: drawerWidth
+            marginLeft: drawerWidth,
+            overflow: 'hidden'
         }
     }
 }
