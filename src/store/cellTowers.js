@@ -1,5 +1,5 @@
 import {createSlice} from '@reduxjs/toolkit'
-import {wrapLongitudeTo180} from '../support/CoordinateSupport'
+import {containsAllLongitudes, wrapLongitudeTo180} from '../support/CoordinateSupport'
 
 export const cellTowers = createSlice({
     name: 'cellTowers',
@@ -40,7 +40,7 @@ export const fetchTotalCount = (layers, extent) => dispatch => {
     west = wrapLongitudeTo180(west)
     east = wrapLongitudeTo180(east)
 
-    if (Math.round(west) === Math.round(east)) {
+    if (containsAllLongitudes(west, south, east, north)) {
         west = -180
         east = 180
     }

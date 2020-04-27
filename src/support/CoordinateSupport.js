@@ -8,3 +8,7 @@ export function wrapLongitudeTo180(longitude) {
     }
     return result
 }
+
+export function containsAllLongitudes(west, south, east, north) {
+    return Math.round(west) === Math.round(east) && north - south > 30
+}

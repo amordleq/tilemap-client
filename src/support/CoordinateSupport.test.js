@@ -1,4 +1,4 @@
-import {wrapLongitudeTo180} from './CoordinateSupport'
+import {containsAllLongitudes, wrapLongitudeTo180} from './CoordinateSupport'
 
 describe('CoordinateSupport', () => {
     describe('wrapLongitudeTo180', () => {
@@ -12,6 +12,16 @@ describe('CoordinateSupport', () => {
             expect(wrapLongitudeTo180(280)).toEqual(-80)
             expect(wrapLongitudeTo180(540)).toEqual(180)
             expect(wrapLongitudeTo180(-540)).toEqual(-180)
+        })
+    })
+    describe('containsAllLongitudes', () => {
+        test('is true if zoomed out and east/west are the same', () => {
+            expect(containsAllLongitudes(175, -80, 175, 80)).toBe(true)
+            expect(containsAllLongitudes(175.01, -80, 175, 80)).toBe(true)
+        })
+        test('is false if zoomed in and east/west are the same', () => {
+            expect(containsAllLongitudes(175, 5, 175, 6)).toBe(false)
+            expect(containsAllLongitudes(175.01, 5, 175, 6)).toBe(false)
         })
     })
 })
