@@ -23,7 +23,7 @@ export const layers = createSlice({
     name: 'layers',
     initialState: {
         layers: [{
-            id: 'baseMap',
+            id: 'base-map',
             label: 'Base Map',
             opacity: 0.5
         }, {

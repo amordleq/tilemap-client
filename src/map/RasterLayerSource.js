@@ -1,6 +1,6 @@
 import XYZ from 'ol/source/XYZ'
 
-class DataLayerSource extends XYZ {
+class RasterLayerSource extends XYZ {
 
     constructor(options) {
         super(options)
@@ -32,4 +32,4 @@ class DataLayerSource extends XYZ {
 
 }
 
-export default DataLayerSource
+export default RasterLayerSource
