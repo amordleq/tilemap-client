@@ -44,6 +44,7 @@ function StyleField({style, handleStyleChange}) {
                 <Select value={style} onChange={handleStyleChange}>
                     <MenuItem value={'heatmap'}>Heatmap</MenuItem>
                     <MenuItem value={'subterm/mcc'}>MCC (Country Codes)</MenuItem>
+                    <MenuItem value={'debug'}>Debug</MenuItem>
                 </Select>
             </FormControl>
         </Box>
