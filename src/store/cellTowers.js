@@ -75,8 +75,9 @@ export const fetchTotalCount = (layers, extent) => dispatch => {
 
 export const fetchDetails = (geoPoint, resolution, layers) => dispatch => {
     const [longitude, latitude] = geoPoint
-    const minimumDistanceInMeters = 500
-    const distance = Math.max(minimumDistanceInMeters, Math.round(resolution)) + 'm'
+    const maximumDistanceInMeters = 20000
+    const radiusInPixels = 3
+    const distance = Math.min(maximumDistanceInMeters, Math.round(resolution * radiusInPixels)) + 'm'
     const maxResults = 200
     const layerWithFilter = layers.find(layer => layer.filter)
 
